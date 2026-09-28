@@ -82,8 +82,9 @@ INSTALL_DIR="/opt/virtualizor-vps-cleaner"
 REPO_URL="https://github.com/muditkumarprajapati/virtualizor-vps-cleaner.git"
 
 if [ -d "$INSTALL_DIR/.git" ]; then
-    echo -e "${CYAN}→ Existing installation found in ${INSTALL_DIR}. Updating via git pull...${RESET}"
-    git -C "$INSTALL_DIR" pull --quiet
+    echo -e "${CYAN}→ Existing installation found in ${INSTALL_DIR}. Force-updating to latest release...${RESET}"
+    git -C "$INSTALL_DIR" fetch --all --quiet
+    git -C "$INSTALL_DIR" reset --hard origin/main --quiet
 else
     echo -e "${CYAN}→ Cloning repository into ${INSTALL_DIR}...${RESET}"
     rm -rf "$INSTALL_DIR"
