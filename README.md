@@ -121,8 +121,18 @@ If you issue `START TRANSACTION; DELETE FROM ...;` on a MyISAM table:
 
 ## Installation & Execution
 
-### 1. Direct Clone onto Virtualizor Master
-Log in to your Virtualizor Master server via SSH as `root`:
+### Option 1: Quick One-Liner (No Git Required)
+If `git` is not installed on your server, you can download and extract directly using `curl` and `tar`:
+
+```bash
+cd /root
+curl -sSL https://github.com/muditkumarprajapati/virtualizor-vps-cleaner/archive/refs/heads/main.tar.gz | tar -xz
+cd virtualizor-vps-cleaner-main
+chmod +x virtualizor-vps-cleaner.php
+```
+
+### Option 2: Clone with Git
+If `git` is installed:
 
 ```bash
 cd /root
@@ -130,6 +140,8 @@ git clone https://github.com/muditkumarprajapati/virtualizor-vps-cleaner.git
 cd virtualizor-vps-cleaner
 chmod +x virtualizor-vps-cleaner.php
 ```
+
+*(If you get `-bash: git: command not found`, install it via `yum install -y git` on RHEL/CentOS/AlmaLinux or `apt update && apt install -y git` on Ubuntu/Debian).*
 
 ### 2. Zero-Dependency Runtime
 The utility has **zero external package requirements** to run. It includes a built-in PSR-4 autoloader and seamlessly works with Virtualizor's internal EMPS PHP environment:
