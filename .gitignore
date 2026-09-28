@@ -1,0 +1,36 @@
+# Virtualizor VPS Cleaner .gitignore
+
+# Dependencies
+/vendor/
+
+# Backups & Dumps (Never commit database backups or customer data!)
+/backups/
+*.sql
+*.sql.gz
+
+# Logs & Audit trails
+/logs/
+*.log
+*.jsonl
+
+# Temporary and SQLite test files
+*.sqlite
+*.sqlite3
+/tmp/
+
+# Environment and sensitive configuration
+.env
+.env.local
+universal.php
+
+# PHPUnit & Testing cache
+.phpunit.result.cache
+.phpunit.cache/
+
+# IDE & OS Metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

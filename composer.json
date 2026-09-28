@@ -1,0 +1,42 @@
+{
+    "name": "muditkumarprajapati/virtualizor-vps-cleaner",
+    "description": "Production-quality interactive command-line utility to safely remove orphaned VPS database records from retired or reinstalled Virtualizor infrastructure.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mudit Kumar Prajapati",
+            "homepage": "https://github.com/muditkumarprajapati"
+        }
+    ],
+    "require": {
+        "php": ">=7.4.0",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5 || ^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "VirtualizorVpsCleaner\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "VirtualizorVpsCleaner\\Tests\\": "tests/"
+        }
+    },
+    "bin": [
+        "virtualizor-vps-cleaner.php"
+    ],
+    "scripts": {
+        "test": "php tests/run_tests.php",
+        "lint": "php -l virtualizor-vps-cleaner.php"
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}
