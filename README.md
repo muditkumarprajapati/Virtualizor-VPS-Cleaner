@@ -121,27 +121,66 @@ If you issue `START TRANSACTION; DELETE FROM ...;` on a MyISAM table:
 
 ## Installation & Execution
 
-### Option 1: Quick One-Liner (No Git Required)
-If `git` is not installed on your server, you can download and extract directly using `curl` and `tar`:
+### Option 1: Automatic One-Line Installer (Recommended)
+This script auto-detects your Linux distribution (AlmaLinux, Rocky, CentOS, Ubuntu, Debian), installs `git` and `curl` if missing, sets up the cleaner in `/opt/virtualizor-vps-cleaner`, and creates a global command `virtualizor-cleaner`:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/muditkumarprajapati/virtualizor-vps-cleaner/main/install.sh | bash
+```
+
+Once installed, simply run from anywhere:
+```bash
+virtualizor-cleaner
+```
+
+---
+
+### Option 2: Distribution-Specific Manual Installation
+
+Select your Linux distribution to install prerequisites and clone:
+
+#### 🔹 AlmaLinux 8 / 9 & Rocky Linux 8 / 9 & RHEL 8 / 9
+```bash
+dnf install -y git curl
+cd /root
+git clone https://github.com/muditkumarprajapati/virtualizor-vps-cleaner.git
+cd virtualizor-vps-cleaner
+chmod +x virtualizor-vps-cleaner.php
+/usr/local/emps/bin/php virtualizor-vps-cleaner.php
+```
+
+#### 🔹 CentOS 7 & CloudLinux 7
+```bash
+yum install -y git curl
+cd /root
+git clone https://github.com/muditkumarprajapati/virtualizor-vps-cleaner.git
+cd virtualizor-vps-cleaner
+chmod +x virtualizor-vps-cleaner.php
+/usr/local/emps/bin/php virtualizor-vps-cleaner.php
+```
+
+#### 🔹 Ubuntu (20.04, 22.04, 24.04 LTS) & Debian (10, 11, 12)
+```bash
+apt update -y && apt install -y git curl
+cd /root
+git clone https://github.com/muditkumarprajapati/virtualizor-vps-cleaner.git
+cd virtualizor-vps-cleaner
+chmod +x virtualizor-vps-cleaner.php
+/usr/local/emps/bin/php virtualizor-vps-cleaner.php
+```
+
+---
+
+### Option 3: Minimal Linux / No Git Required
+If you do not want to install `git` via your package manager, download and extract directly using `curl` and `tar`:
 
 ```bash
 cd /root
 curl -sSL https://github.com/muditkumarprajapati/virtualizor-vps-cleaner/archive/refs/heads/main.tar.gz | tar -xz
 cd virtualizor-vps-cleaner-main
 chmod +x virtualizor-vps-cleaner.php
+/usr/local/emps/bin/php virtualizor-vps-cleaner.php
 ```
-
-### Option 2: Clone with Git
-If `git` is installed:
-
-```bash
-cd /root
-git clone https://github.com/muditkumarprajapati/virtualizor-vps-cleaner.git
-cd virtualizor-vps-cleaner
-chmod +x virtualizor-vps-cleaner.php
-```
-
-*(If you get `-bash: git: command not found`, install it via `yum install -y git` on RHEL/CentOS/AlmaLinux or `apt update && apt install -y git` on Ubuntu/Debian).*
 
 ### 2. Zero-Dependency Runtime
 The utility has **zero external package requirements** to run. It includes a built-in PSR-4 autoloader and seamlessly works with Virtualizor's internal EMPS PHP environment:
