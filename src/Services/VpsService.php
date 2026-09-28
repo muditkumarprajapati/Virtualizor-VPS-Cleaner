@@ -188,14 +188,30 @@ class VpsService
         }
 
         // 4. Hydrate Tasks
-        if ($this->inspector->hasTable('tasks')) {
-            $stmt = $pdo->prepare("SELECT * FROM `tasks` WHERE `vpsid` = :vpsid ORDER BY `taskid` DESC LIMIT 10");
-            $stmt->execute([':vpsid' => $vps->getVpsid()]);
-            $tasks = [];
-            while ($row = $stmt->fetch()) {
-                $tasks[] = new Task($row);
+        if ($this->inspector->hasTable('tasks') && $this->inspector->hasColumn('tasks', 'vpsid')) {
+            try {
+                $orderCol = null;
+                if ($this->inspector->hasColumn('tasks', 'actid')) {
+                    $orderCol = '`actid`';
+                } elseif ($this->inspector->hasColumn('tasks', 'taskid')) {
+                    $orderCol = '`taskid`';
+                } elseif ($this->inspector->hasColumn('tasks', 'id')) {
+                    $orderCol = '`id`';
+                } elseif ($this->inspector->hasColumn('tasks', 'time')) {
+                    $orderCol = '`time`';
+                }
+
+                $orderSql = ($orderCol !== null) ? "ORDER BY {$orderCol} DESC" : "";
+                $stmt = $pdo->prepare("SELECT * FROM `tasks` WHERE `vpsid` = :vpsid {$orderSql} LIMIT 10");
+                $stmt->execute([':vpsid' => $vps->getVpsid()]);
+                $tasks = [];
+                while ($row = $stmt->fetch()) {
+                    $tasks[] = new Task($row);
+                }
+                $vps->setTasks($tasks);
+            } catch (\Throwable $e) {
+                // Non-critical: failure reading task history should not block VPS inspection or listing
             }
-            $vps->setTasks($tasks);
         }
     }
 

@@ -218,7 +218,7 @@ class CleanupService
             }
 
             // Check tasks again under lock
-            if ($this->inspector->hasTable('tasks')) {
+            if ($this->inspector->hasTable('tasks') && $this->inspector->hasColumn('tasks', 'vpsid') && $this->inspector->hasColumn('tasks', 'status')) {
                 $taskStmt = $pdo->prepare("SELECT COUNT(*) FROM `tasks` WHERE `vpsid` = :vpsid AND `status` = 0");
                 $taskStmt->execute([':vpsid' => $vpsid]);
                 if ((int) $taskStmt->fetchColumn() > 0) {
