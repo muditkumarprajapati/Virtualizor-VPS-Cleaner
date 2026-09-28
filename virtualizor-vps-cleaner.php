@@ -64,6 +64,11 @@ foreach ($argv as $i => $arg) {
 
 if ($showHelp) {
     \VirtualizorVpsCleaner\Terminal\Prompt::banner();
+    echo "Description:\n";
+    echo "  A production-quality interactive command-line utility built for Linux systems\n";
+    echo "  administrators and hosting providers to safely inspect, preview, and remove\n";
+    echo "  orphaned VPS database records from Virtualizor master servers when slave nodes\n";
+    echo "  have been permanently decommissioned, wiped, or reinstalled.\n\n";
     echo "Usage: \n";
     echo "  php virtualizor-vps-cleaner.php [options]\n\n";
     echo "Options:\n";

@@ -16,22 +16,18 @@ A production-grade, interactive command-line utility built for Linux systems adm
 
 ---
 
-## Table of Contents
+## 📖 Description & Purpose
 
-1. [The Problem](#the-problem)
-2. [Core Safety Guarantees](#core-safety-guarantees)
-3. [The 7-Step Guarded Cleanup Workflow](#the-7-step-guarded-cleanup-workflow)
-4. [Architecture & MyISAM Caveats](#architecture--myisam-caveats)
-5. [System Requirements](#system-requirements)
-6. [Installation & Execution](#installation--execution)
-7. [Configuration](#configuration)
-8. [Interactive Terminal Mode](#interactive-terminal-mode)
-9. [Command-Line Mode & Flags](#command-line-mode--flags)
-10. [Step-by-Step Disaster Recovery](#step-by-step-disaster-recovery)
-11. [Audit Logging & Backup Retention](#audit-logging--backup-retention)
-12. [Automated Testing & Quality Assurance](#automated-testing--quality-assurance)
-13. [Project Directory Layout](#project-directory-layout)
-14. [Contributing & License](#contributing--license)
+**Virtualizor VPS Cleanup Manager** is an enterprise-grade command-line interface (CLI) and interactive terminal management tool designed for web hosting providers, cloud infrastructure administrators, and database engineers.
+
+When dedicated hypervisor slave nodes in a Virtualizor cluster are permanently retired, destroyed, or reinstalled with new operating systems, the Virtualizor web panel cannot delete old virtual machines hosted on those nodes because the remote Virtualizor slave agent daemon (port 4083) is unreachable. This leaves stale, ghost VPS records that clutter your control panel, skew IP address pools, and cause accounting anomalies.
+
+This utility provides a **guarded, transparent, 7-step safe deletion pipeline** that:
+- **Discovers and displays** all orphaned VPS instances with pagination and multi-field search.
+- **Inspects relationships** between VPS records, disk metadata (`disks` table), IP bindings (`ips` table), and pending task locks (`tasks` table).
+- **Protects MyISAM databases** through consistent table locking (`LOCK TABLES`) and pre-deletion verified backups (`mysqldump`), with zero transactional rollback illusions.
+- **Guarantees zero physical disk deletions**: Storage volumes, QCOW2 files, RAW images, LVM partitions, and cloud mounts are strictly untouched.
+- **Prevents IP address loss**: Assigned IP addresses are unlinked from the deleted VPS but retained in the IP pool and kept locked/reserved until the administrator explicitly reassigns them.
 
 ---
 
