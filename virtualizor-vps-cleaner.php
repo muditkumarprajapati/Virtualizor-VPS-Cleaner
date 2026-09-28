@@ -15,12 +15,29 @@
 declare(strict_types=1);
 
 // 1. PHP Version and Environment Compatibility Checks
-if (PHP_VERSION_ID < 70400) {
-    fwrite(STDERR, "Error: Virtualizor VPS Cleanup Manager requires PHP 7.4.0 or newer.\n");
+if (PHP_VERSION_ID < 70200) {
+    fwrite(STDERR, "Error: Virtualizor VPS Cleanup Manager requires PHP 7.2.0 or newer.\n");
     fwrite(STDERR, "Current PHP version: " . PHP_VERSION . "\n");
     fwrite(STDERR, "Tip: On Virtualizor master servers, you can execute using the EMPS PHP binary:\n");
     fwrite(STDERR, "  /usr/local/emps/bin/php virtualizor-vps-cleaner.php\n\n");
     exit(1);
+}
+
+// Polyfill PHP 8 functions for PHP 7.x compatibility
+if (!function_exists('str_starts_with')) {
+    function str_starts_with(string $haystack, string $needle): bool {
+        return (string)$needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0 || $needle === '';
+    }
+}
+if (!function_exists('str_ends_with')) {
+    function str_ends_with(string $haystack, string $needle): bool {
+        return $needle === '' || $needle === substr($haystack, -strlen($needle));
+    }
+}
+if (!function_exists('str_contains')) {
+    function str_contains(string $haystack, string $needle): bool {
+        return $needle === '' || strpos($haystack, $needle) !== false;
+    }
 }
 
 // 2. Check required PHP extensions

@@ -250,7 +250,7 @@ class Vps
             'cores'      => $this->cores,
             'space'      => $this->space,
             'status'     => $this->status,
-            'server'     => $this->server?->toArray(),
+            'server'     => ($this->server !== null) ? $this->server->toArray() : null,
             'disks'      => array_map(fn($d) => $d->toArray(), $this->disks),
             'ips'        => array_map(fn($i) => $i->toArray(), $this->ips),
             'tasks'      => array_map(fn($t) => $t->toArray(), $this->tasks),

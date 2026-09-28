@@ -116,12 +116,28 @@ class Prompt
      */
     public static function alert(string $type, string $title, array $lines, int $width = 76): void
     {
-        [$color, $borderColor, $badge] = match ($type) {
-            'danger'  => [Ansi::BRIGHT_RED, Ansi::RED, "[ DANGER / CAUTION ]"],
-            'warning' => [Ansi::BRIGHT_YELLOW, Ansi::YELLOW, "[ WARNING ]"],
-            'success' => [Ansi::BRIGHT_GREEN, Ansi::GREEN, "[ SUCCESS ]"],
-            default   => [Ansi::BRIGHT_CYAN, Ansi::CYAN, "[ INFORMATION ]"],
-        };
+        switch ($type) {
+            case 'danger':
+                $color = Ansi::BRIGHT_RED;
+                $borderColor = Ansi::RED;
+                $badge = "[ DANGER / CAUTION ]";
+                break;
+            case 'warning':
+                $color = Ansi::BRIGHT_YELLOW;
+                $borderColor = Ansi::YELLOW;
+                $badge = "[ WARNING ]";
+                break;
+            case 'success':
+                $color = Ansi::BRIGHT_GREEN;
+                $borderColor = Ansi::GREEN;
+                $badge = "[ SUCCESS ]";
+                break;
+            default:
+                $color = Ansi::BRIGHT_CYAN;
+                $borderColor = Ansi::CYAN;
+                $badge = "[ INFORMATION ]";
+                break;
+        }
 
         $top = "┌─ " . $badge . " " . str_repeat("─", max(0, $width - Ansi::length($badge) - 5)) . "┐";
         $bottom = "└" . str_repeat("─", $width) . "┘";

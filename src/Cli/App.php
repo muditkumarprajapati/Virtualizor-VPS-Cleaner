@@ -315,7 +315,8 @@ class App
         $rows = [];
 
         foreach ($vpsList as $vps) {
-            $serverName = $vps->getServer()?->getServerName() ?? 'N/A';
+            $server = $vps->getServer();
+            $serverName = ($server !== null) ? $server->getServerName() : 'N/A';
             $statusStr = $vps->getStatus();
             $statusBadge = ($statusStr === '1' || $statusStr === 'running' || $statusStr === 'active')
                 ? Ansi::green('Active')
@@ -376,8 +377,8 @@ class App
         $infoTable->addRow(['User / Owner ID', (string) $vps->getUid()]);
         $infoTable->addRow(['RAM / Cores / Space', "{$vps->getRam()} MB / {$vps->getCores()} Core(s) / {$vps->getSpace()} GB"]);
         $infoTable->addRow(['Server Node ID', (string) $vps->getSerid()]);
-        $infoTable->addRow(['Server Name', $server?->getServerName() ?? 'N/A']);
-        $infoTable->addRow(['Server IP', $server?->getIp() ?? 'N/A']);
+        $infoTable->addRow(['Server Name', ($server !== null) ? $server->getServerName() : 'N/A']);
+        $infoTable->addRow(['Server IP', ($server !== null) ? $server->getIp() : 'N/A']);
         $infoTable->addRow(['Server Status', $serverStatus]);
         echo $infoTable->render();
 
@@ -426,11 +427,14 @@ class App
             echo Ansi::bold("Recent Tasks & Actions:") . "\n";
             $taskTable = new Table(['Task ID', 'Action', 'Status', 'Date']);
             foreach ($tasks as $t) {
-                $taskStatus = match ($t->getStatus()) {
-                    0 => Ansi::brightYellow('IN PROGRESS / PENDING'),
-                    1 => Ansi::green('Completed'),
-                    default => Ansi::red('Error/Failed'),
-                };
+                $statusVal = $t->getStatus();
+                if ($statusVal === 0) {
+                    $taskStatus = Ansi::brightYellow('IN PROGRESS / PENDING');
+                } elseif ($statusVal === 1) {
+                    $taskStatus = Ansi::green('Completed');
+                } else {
+                    $taskStatus = Ansi::red('Error/Failed');
+                }
                 $taskTable->addRow([
                     (string) $t->getTaskId(),
                     $t->getAction(),
@@ -548,7 +552,8 @@ class App
         }
 
         // Ask explicit confirmation that VPS belongs to retired infrastructure
-        $serverName = $vps->getServer()?->getServerName() ?? "Server #{$vps->getSerid()}";
+        $server = $vps->getServer();
+        $serverName = ($server !== null) ? $server->getServerName() : "Server #{$vps->getSerid()}";
         $confirmRetired = Prompt::confirm(
             "Do you explicitly confirm that VPS #{$vpsid} ({$vps->getVpsName()}) belongs to retired infrastructure ({$serverName}) and its data is no longer required?",
             false
