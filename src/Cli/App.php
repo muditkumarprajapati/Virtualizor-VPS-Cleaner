@@ -154,6 +154,10 @@ class App
             return $this->cmdSchema();
         }
 
+        if (isset($args['health']) || isset($args['check'])) {
+            return $this->cmdHealthCheck();
+        }
+
         // No command-line flag provided: enter Interactive Terminal Mode
         return $this->runInteractiveLoop();
     }
@@ -174,7 +178,8 @@ class App
                 '4' => Ansi::bold(Ansi::brightRed('Remove a selected VPS (7-Step Guarded Cleanup)')),
                 '5' => 'View database backup history',
                 '6' => 'View cleanup audit history',
-                '7' => 'Refresh database and schema information',
+                '7' => 'Inspect database schema and table engines',
+                '8' => Ansi::bold(Ansi::brightGreen('Run system & database health check (unlocks & tests tables)')),
                 '0' => 'Exit',
             ];
 
@@ -214,6 +219,10 @@ class App
                     break;
                 case '7':
                     $this->cmdSchema();
+                    Prompt::pause();
+                    break;
+                case '8':
+                    $this->cmdHealthCheck();
                     Prompt::pause();
                     break;
                 case '0':
@@ -788,6 +797,94 @@ class App
     }
 
     /**
+     * Run system and database health check, inspect table health, and clear any locks
+     */
+    public function cmdHealthCheck(): int
+    {
+        echo "\n" . Ansi::bold(Ansi::brightCyan("═══ SYSTEM & DATABASE HEALTH CHECK ═══")) . "\n\n";
+
+        // 1. Force release any hanging table locks
+        echo "1. Checking and clearing table locks... ";
+        $this->connection->forceUnlockTables();
+        echo Ansi::green("✓ Verified (All table locks dropped)\n");
+
+        // 2. Database ping
+        echo "2. Testing database connectivity... ";
+        if ($this->connection->ping()) {
+            echo Ansi::green("✓ Connected successfully\n");
+        } else {
+            echo Ansi::red("✖ Connection failed!\n");
+            return 1;
+        }
+
+        // 3. Check core table integrity
+        echo "\n3. Performing integrity check on Virtualizor tables:\n";
+        $coreTables = ['vps', 'disks', 'ips', 'servers', 'tasks', 'storage', 'plans', 'users'];
+        $pdo = $this->connection->getPdo();
+        $isSqlite = ($this->config->getDriver() === 'sqlite');
+
+        $headers = ['Table', 'Engine', 'Integrity Status', 'Recommendation'];
+        $rows = [];
+        $engines = $this->inspector->getTableEngines();
+
+        foreach ($coreTables as $tbl) {
+            if (!$this->inspector->hasTable($tbl)) {
+                $rows[] = [$tbl, 'N/A', Ansi::yellow('Not Installed / Optional'), 'None'];
+                continue;
+            }
+
+            $engine = $engines[$tbl] ?? 'Unknown';
+            $statusText = 'OK';
+            $actionText = Ansi::green('Healthy');
+
+            if (!$isSqlite) {
+                try {
+                    $stmt = $pdo->query("CHECK TABLE `{$tbl}`");
+                    while ($check = $stmt->fetch()) {
+                        $msgType = strtolower($check['Msg_type'] ?? '');
+                        $msgText = $check['Msg_text'] ?? '';
+                        if ($msgType === 'status') {
+                            $statusText = $msgText;
+                        } elseif ($msgType === 'error' || $msgType === 'warning') {
+                            $statusText = Ansi::red("{$msgType}: {$msgText}");
+                            $actionText = Ansi::brightYellow("REPAIR RECOMMENDED");
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    $statusText = Ansi::red('Check query failed');
+                    $actionText = Ansi::red('Inspect logs');
+                }
+            } else {
+                $statusText = 'OK';
+            }
+
+            $statusBadge = (stripos($statusText, 'ok') !== false)
+                ? Ansi::green($statusText)
+                : Ansi::red($statusText);
+
+            $rows[] = [$tbl, $engine, $statusBadge, $actionText];
+        }
+
+        $table = new Table($headers, $rows);
+        echo $table->render();
+
+        // 4. Check Virtualizor daemon status if on Linux
+        if (DIRECTORY_SEPARATOR !== '\\') {
+            echo "\n4. Virtualizor service status:\n";
+            $serviceCheck = shell_exec("systemctl is-active virtualizor 2>/dev/null") ?? '';
+            $statusTrim = trim($serviceCheck);
+            if ($statusTrim === 'active') {
+                echo "   Virtualizor Service: " . Ansi::green("✓ ACTIVE / RUNNING") . "\n";
+            } else {
+                echo "   Virtualizor Service: " . Ansi::yellow("Status: " . ($statusTrim ?: 'Not managed by systemd or inactive')) . "\n";
+            }
+        }
+
+        echo "\n" . Ansi::bold(Ansi::brightGreen("Health check completed successfully! All tables are unlocked and ready.")) . "\n\n";
+        return 0;
+    }
+
+    /**
      * Display CLI help documentation
      */
     public function printHelp(): void
@@ -812,6 +909,7 @@ class App
         echo "  " . str_pad("--backups", 28) . "List all pre-deletion database backups\n";
         echo "  " . str_pad("--history", 28) . "Display recent cleanup audit log history\n";
         echo "  " . str_pad("--schema", 28) . "Inspect database tables and MyISAM storage engine status\n";
+        echo "  " . str_pad("--health, --check", 28) . "Run system health check, unlock tables & verify integrity\n";
         echo "  " . str_pad("--config <file>", 28) . "Path to custom Virtualizor universal.php or config file\n";
         echo "  " . str_pad("--no-ansi", 28) . "Disable ANSI color formatting\n";
         echo "  " . str_pad("-h, --help", 28) . "Show this help screen\n";

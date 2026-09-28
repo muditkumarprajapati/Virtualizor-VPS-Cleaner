@@ -100,6 +100,7 @@ if ($showHelp) {
     echo "  " . str_pad("--backups", 28) . "List all pre-deletion database backups\n";
     echo "  " . str_pad("--history", 28) . "Display recent cleanup audit log history\n";
     echo "  " . str_pad("--schema", 28) . "Inspect database tables and MyISAM storage engine status\n";
+    echo "  " . str_pad("--health, --check", 28) . "Run system health check, unlock tables & verify integrity\n";
     echo "  " . str_pad("--config <file>", 28) . "Path to custom Virtualizor universal.php or config file\n";
     echo "  " . str_pad("--no-ansi", 28) . "Disable ANSI color formatting\n";
     echo "  " . str_pad("-h, --help", 28) . "Show this help screen\n";

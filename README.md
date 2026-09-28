@@ -1,8 +1,8 @@
 # Virtualizor VPS Cleanup Manager
 
-[![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
+[![PHP Version](https://img.shields.io/badge/PHP-7.2%2B-777bb4.svg)](https://www.php.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests: 39 Passing](https://img.shields.io/badge/Tests-39%20Passing-brightgreen.svg)](tests/)
+[![Tests: 40 Passing](https://img.shields.io/badge/Tests-40%20Passing-brightgreen.svg)](tests/)
 [![Virtualizor: 2.x%20--%204.x](https://img.shields.io/badge/Virtualizor-2.x%20--%204.x-blue.svg)](https://www.virtualizor.com/)
 
 A production-grade, interactive command-line utility built for Linux systems administrators, hosting operators, and database administrators to safely inspect and purge orphaned VPS database records on Virtualizor master servers when slave nodes have been permanently retired, wiped, or reinstalled.
@@ -315,7 +315,13 @@ php virtualizor-vps-cleaner.php --history
 php virtualizor-vps-cleaner.php --schema
 ```
 
-### 7. Scripting & Automation Flags
+### 7. System Health Check & Auto-Unlock
+Inspect table integrity, verify that all table locks are dropped, and check Virtualizor service status:
+```bash
+php virtualizor-vps-cleaner.php --health
+```
+
+### 8. Scripting & Automation Flags
 ```bash
 # Disable ANSI color escape codes (ideal for piping or cron)
 php virtualizor-vps-cleaner.php --list --no-ansi

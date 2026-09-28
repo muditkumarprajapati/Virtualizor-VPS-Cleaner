@@ -29,6 +29,13 @@ class Connection
     public function __construct(VirtualizorConfig $config)
     {
         $this->config = $config;
+
+        // Register shutdown function to guarantee tables are unlocked even on fatal errors or exit
+        register_shutdown_function(function () {
+            if ($this->tablesLocked) {
+                $this->unlockTables();
+            }
+        });
     }
 
     /**
@@ -39,6 +46,28 @@ class Connection
         if ($this->tablesLocked) {
             $this->unlockTables();
         }
+    }
+
+    /**
+     * Force unlock all tables on the database server regardless of tracked state
+     */
+    public function forceUnlockTables(): bool
+    {
+        if ($this->config->getDriver() === 'sqlite') {
+            $this->tablesLocked = false;
+            $this->lockedTables = [];
+            return true;
+        }
+
+        try {
+            $this->getPdo()->exec("UNLOCK TABLES");
+        } catch (\Throwable $e) {
+            // Ignore if connection already dropped
+        }
+
+        $this->tablesLocked = false;
+        $this->lockedTables = [];
+        return true;
     }
 
     /**

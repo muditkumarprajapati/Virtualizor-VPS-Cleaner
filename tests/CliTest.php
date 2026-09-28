@@ -103,4 +103,16 @@ class CliTest extends TestCase
         $this->assertEquals(0, $code);
         $this->assertStringContains('CLEANUP AUDIT HISTORY', $output);
     }
+
+    public function testHealthCheckCommand(): void
+    {
+        ob_start();
+        $code = $this->app->run(['virtualizor-vps-cleaner.php', '--health', '--no-ansi']);
+        $output = ob_get_clean();
+
+        $this->assertEquals(0, $code);
+        $this->assertStringContains('SYSTEM & DATABASE HEALTH CHECK', $output);
+        $this->assertStringContains('All table locks dropped', $output);
+        $this->assertStringContains('Connected successfully', $output);
+    }
 }

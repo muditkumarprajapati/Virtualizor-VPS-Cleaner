@@ -85,19 +85,33 @@ class VpsService
                 $params[':query_id'] = (int) $query;
             }
 
-            // Match vps_name, hostname, uuid
-            $subWhere[] = "`vps_name` LIKE :query_like";
-            $subWhere[] = "`hostname` LIKE :query_like";
-            $subWhere[] = "`uuid` LIKE :query_like";
-            $params[':query_like'] = "%{$query}%";
-
-            // If query could be an IP, match ips table
-            if (filter_var($query, FILTER_VALIDATE_IP) || str_contains($query, '.')) {
-                $subWhere[] = "`vpsid` IN (SELECT `vpsid` FROM `ips` WHERE `ip` LIKE :query_ip)";
-                $params[':query_ip'] = "%{$query}%";
+            // Match vps_name, hostname, uuid dynamically
+            $likeFields = [];
+            if ($this->inspector->hasColumn('vps', 'vps_name')) {
+                $likeFields[] = "`vps_name` LIKE :query_like";
+            }
+            if ($this->inspector->hasColumn('vps', 'hostname')) {
+                $likeFields[] = "`hostname` LIKE :query_like";
+            }
+            if ($this->inspector->hasColumn('vps', 'uuid')) {
+                $likeFields[] = "`uuid` LIKE :query_like";
+            }
+            if (!empty($likeFields)) {
+                $subWhere[] = "(" . implode(' OR ', $likeFields) . ")";
+                $params[':query_like'] = "%{$query}%";
             }
 
-            $whereClauses[] = "(" . implode(' OR ', $subWhere) . ")";
+            // If query could be an IP, match ips table
+            if ($this->inspector->hasTable('ips') && $this->inspector->hasColumn('ips', 'ip') && $this->inspector->hasColumn('ips', 'vpsid')) {
+                if (filter_var($query, FILTER_VALIDATE_IP) || str_contains($query, '.')) {
+                    $subWhere[] = "`vpsid` IN (SELECT `vpsid` FROM `ips` WHERE `ip` LIKE :query_ip)";
+                    $params[':query_ip'] = "%{$query}%";
+                }
+            }
+
+            if (!empty($subWhere)) {
+                $whereClauses[] = "(" . implode(' OR ', $subWhere) . ")";
+            }
         }
 
         $whereSql = !empty($whereClauses) ? "WHERE " . implode(' AND ', $whereClauses) : "";
