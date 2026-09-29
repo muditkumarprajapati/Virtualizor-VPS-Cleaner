@@ -77,4 +77,33 @@ class VpsServiceTest extends TestCase
         $this->assertEquals('None', $vps->getPrimaryIp());
         $this->assertEquals('0 disks', $vps->getDiskSummary());
     }
+
+    public function testCreationDateFormatted(): void
+    {
+        $vps = $this->service->findById(101);
+        $this->assertNotNull($vps);
+        $this->assertEquals(1672531199, $vps->getTime());
+        $this->assertEquals(1672531199, $vps->getCreatedAt());
+        $this->assertEquals(date('Y-m-d H:i:s', 1672531199), $vps->getCreationDateFormatted());
+        $this->assertStringContains('ago', $vps->getCreationDateFormatted('Y-m-d H:i:s', true));
+        $this->assertEquals('kvm', $vps->getVirt());
+        $this->assertEquals(512, $vps->getSwap());
+        $this->assertEquals('2000', $vps->getBandwidth());
+
+        $array = $vps->toArray();
+        $this->assertEquals(1672531199, $array['time']);
+        $this->assertEquals(date('Y-m-d H:i:s', 1672531199), $array['created_at']);
+        $this->assertEquals('kvm', $array['virt']);
+        $this->assertEquals(512, $array['swap']);
+        $this->assertEquals('2000', $array['bandwidth']);
+    }
+
+    public function testCreationDateWhenMissingHandledGracefully(): void
+    {
+        $vps = $this->service->findById(103);
+        $this->assertNotNull($vps);
+        $this->assertNull($vps->getTime());
+        $this->assertEquals('Not recorded / Unknown', $vps->getCreationDateFormatted());
+        $this->assertEquals('Not recorded / Unknown', $vps->getCreationDateFormatted('Y-m-d H:i:s', true));
+    }
 }

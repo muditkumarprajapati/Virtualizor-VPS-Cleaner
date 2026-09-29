@@ -26,7 +26,7 @@ use VirtualizorVpsCleaner\Terminal\Prompt;
 
 class App
 {
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.1.0';
 
     private VirtualizorConfig $config;
     private Connection $connection;
@@ -320,7 +320,7 @@ class App
      */
     private function renderVpsTable(array $vpsList): void
     {
-        $headers = ['ID', 'VPS Name', 'Hostname', 'IP Address(es)', 'Server ID', 'Server Name', 'Disk Summary', 'Status'];
+        $headers = ['ID', 'VPS Name', 'Hostname', 'IP Address(es)', 'Server ID', 'Server Name', 'Created', 'Disk Summary', 'Status'];
         $rows = [];
 
         foreach ($vpsList as $vps) {
@@ -331,6 +331,10 @@ class App
                 ? Ansi::green('Active')
                 : Ansi::gray('Offline/Unk');
 
+            $createdStr = ($vps->getTime() !== null && $vps->getTime() > 0)
+                ? date('Y-m-d', $vps->getTime())
+                : Ansi::dim('-');
+
             $rows[] = [
                 Ansi::bold((string) $vps->getVpsid()),
                 $vps->getVpsName(),
@@ -338,6 +342,7 @@ class App
                 $vps->getAllIpsFormatted(),
                 (string) $vps->getSerid(),
                 $serverName,
+                $createdStr,
                 $vps->getDiskSummary(),
                 $statusBadge,
             ];
@@ -376,15 +381,37 @@ class App
         $server = $vps->getServer();
         $serverStatus = $server ? ($server->isOnline() ? Ansi::green('Online (1)') : Ansi::red('Offline (0)')) : Ansi::yellow('Unknown');
 
+        $statusStr = $vps->getStatus();
+        $vpsStatus = ($statusStr === '1' || $statusStr === 'running' || $statusStr === 'active')
+            ? Ansi::green('Active / Running (1)')
+            : (($statusStr === '0' || $statusStr === 'stopped') ? Ansi::red('Offline / Stopped (0)') : Ansi::yellow("Status ({$statusStr})"));
+
+        $creationDateStr = $vps->getCreationDateFormatted('Y-m-d H:i:s', true);
+        $creationDateDisplay = ($vps->getTime() !== null && $vps->getTime() > 0)
+            ? Ansi::brightCyan($creationDateStr)
+            : Ansi::dim($creationDateStr);
+
         // General Information Table
         $infoTable = new Table(['Property', 'Value']);
         $infoTable->addRow(['VPS ID (vpsid)', (string) $vps->getVpsid()]);
         $infoTable->addRow(['VPS Name', $vps->getVpsName()]);
         $infoTable->addRow(['UUID', $vps->getUuid()]);
         $infoTable->addRow(['Hostname', $vps->getHostname() ?: 'Not set']);
+        $infoTable->addRow(['VPS Status', $vpsStatus]);
+        $infoTable->addRow(['Date of Creation', $creationDateDisplay]);
         $infoTable->addRow(['OS Template', $vps->getOsName()]);
+        if ($vps->getVirt() !== '') {
+            $infoTable->addRow(['Virtualization (Virt)', strtoupper($vps->getVirt())]);
+        }
         $infoTable->addRow(['User / Owner ID', (string) $vps->getUid()]);
-        $infoTable->addRow(['RAM / Cores / Space', "{$vps->getRam()} MB / {$vps->getCores()} Core(s) / {$vps->getSpace()} GB"]);
+        $ramRow = "{$vps->getRam()} MB / {$vps->getCores()} Core(s) / {$vps->getSpace()} GB";
+        if ($vps->getSwap() !== null && $vps->getSwap() > 0) {
+            $ramRow .= " (Swap: {$vps->getSwap()} MB)";
+        }
+        $infoTable->addRow(['RAM / Cores / Space', $ramRow]);
+        if ($vps->getBandwidth() !== null && $vps->getBandwidth() !== '') {
+            $infoTable->addRow(['Bandwidth Limit', $vps->getBandwidth() . ' GB']);
+        }
         $infoTable->addRow(['Server Node ID', (string) $vps->getSerid()]);
         $infoTable->addRow(['Server Name', ($server !== null) ? $server->getServerName() : 'N/A']);
         $infoTable->addRow(['Server IP', ($server !== null) ? $server->getIp() : 'N/A']);
@@ -495,8 +522,11 @@ class App
         echo "\n" . Ansi::bold(Ansi::brightYellow("═══ STEP 3: DRY RUN PREVIEW (NO CHANGES COMMITTED) ═══")) . "\n\n";
 
         echo Ansi::bold("1. Database Records to be Deleted:") . "\n";
+        $createdText = !empty($report['vpsToDelete']['created_at']) && $report['vpsToDelete']['created_at'] !== 'Not recorded / Unknown'
+            ? ", Created: " . Ansi::brightCyan($report['vpsToDelete']['created_at'])
+            : "";
         echo "   • Target: Table `vps` -> Row ID: " . Ansi::bold((string) $report['vpsToDelete']['vpsid']) .
-             " (Name: {$report['vpsToDelete']['vps_name']}, UUID: {$report['vpsToDelete']['uuid']})\n";
+             " (Name: {$report['vpsToDelete']['vps_name']}, UUID: {$report['vpsToDelete']['uuid']}{$createdText})\n";
 
         if (!empty($report['disksToDelete'])) {
             echo "   • Target: Table `disks` -> " . count($report['disksToDelete']) . " record(s) matching UUID:\n";

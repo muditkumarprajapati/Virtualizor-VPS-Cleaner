@@ -30,8 +30,10 @@ class CliTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertEquals(0, $code);
+        $this->assertStringContains('Created', $output);
         $this->assertStringContains('v1001', $output);
         $this->assertStringContains('v1002', $output);
+        $this->assertStringContains('2022-12-31', $output);
     }
 
     public function testSearchCommand(): void
@@ -41,7 +43,9 @@ class CliTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertEquals(0, $code);
+        $this->assertStringContains('Created', $output);
         $this->assertStringContains('v1001', $output);
+        $this->assertStringContains('2022-12-31', $output);
         $this->assertFalse(str_contains($output, 'v1002'));
     }
 
@@ -54,7 +58,22 @@ class CliTest extends TestCase
         $this->assertEquals(0, $code);
         $this->assertStringContains('STEP 1: DETAILED VPS INSPECTION', $output);
         $this->assertStringContains('uuid-orphaned-101', $output);
+        $this->assertStringContains('Date of Creation', $output);
+        $this->assertStringContains('2022-12-31', $output);
+        $this->assertStringContains('VPS Status', $output);
         $this->assertStringContains('/var/virtualizor/kvm/v1001.img', $output);
+    }
+
+    public function testInspectVpsWithoutCreationDate(): void
+    {
+        ob_start();
+        $code = $this->app->run(['virtualizor-vps-cleaner.php', '--inspect=103', '--no-ansi']);
+        $output = ob_get_clean();
+
+        $this->assertEquals(0, $code);
+        $this->assertStringContains('STEP 1: DETAILED VPS INSPECTION', $output);
+        $this->assertStringContains('Date of Creation', $output);
+        $this->assertStringContains('Not recorded / Unknown', $output);
     }
 
     public function testDryRunCommand(): void

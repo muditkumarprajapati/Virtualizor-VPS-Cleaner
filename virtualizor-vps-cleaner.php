@@ -89,12 +89,12 @@ if ($showHelp) {
     echo "Usage: \n";
     echo "  php virtualizor-vps-cleaner.php [options]\n\n";
     echo "Options:\n";
-    echo "  " . str_pad("--list", 28) . "List VPS instances with pagination\n";
+    echo "  " . str_pad("--list", 28) . "List VPS instances with creation date, status & pagination\n";
     echo "  " . str_pad("--page <N>", 28) . "Page number for --list (default: 1)\n";
     echo "  " . str_pad("--limit <N>", 28) . "Number of records per page (default: 20)\n";
     echo "  " . str_pad("--server <serid>", 28) . "Filter listing by server ID\n";
     echo "  " . str_pad("--search <query>", 28) . "Search VPS by ID, name, hostname, or IP address\n";
-    echo "  " . str_pad("--inspect <vpsid>", 28) . "Inspect complete VPS details, disks, IPs, and tasks\n";
+    echo "  " . str_pad("--inspect <vpsid>", 28) . "Inspect complete VPS details, creation date, disks, IPs, and tasks\n";
     echo "  " . str_pad("--dry-run --delete <id>", 28) . "Simulate cleanup without modifying database or making backup\n";
     echo "  " . str_pad("--delete <vpsid>", 28) . "Run 7-step guarded cleanup workflow for a specific VPS\n";
     echo "  " . str_pad("--backups", 28) . "List all pre-deletion database backups\n";

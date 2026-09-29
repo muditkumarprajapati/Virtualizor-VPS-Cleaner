@@ -24,6 +24,15 @@ class Vps
     private int $cores;
     private int $space;
     private string $status;
+    private ?int $time = null;
+    private string $virt = '';
+    private ?int $swap = null;
+    private ?string $bandwidth = null;
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $rawData = [];
 
     /**
      * @var array<Disk>
@@ -44,6 +53,7 @@ class Vps
 
     public function __construct(array $data)
     {
+        $this->rawData = $data;
         $this->vpsid = (int) ($data['vpsid'] ?? 0);
         $this->vpsName = (string) ($data['vps_name'] ?? '');
         $this->uuid = (string) ($data['uuid'] ?? '');
@@ -55,6 +65,21 @@ class Vps
         $this->cores = (int) ($data['cores'] ?? 1);
         $this->space = (int) ($data['space'] ?? 0);
         $this->status = (string) ($data['status'] ?? 'unknown');
+        $this->virt = (string) ($data['virt'] ?? '');
+        $this->swap = (isset($data['swap']) && is_numeric($data['swap'])) ? (int) $data['swap'] : null;
+        $this->bandwidth = isset($data['bandwidth']) ? (string) $data['bandwidth'] : null;
+
+        $timeVal = $data['time'] ?? $data['created'] ?? $data['created_at'] ?? $data['time_added'] ?? $data['date_created'] ?? null;
+        if ($timeVal !== null && $timeVal !== '') {
+            if (is_numeric($timeVal)) {
+                $this->time = (int) $timeVal;
+            } else {
+                $parsed = strtotime((string) $timeVal);
+                $this->time = ($parsed !== false) ? $parsed : null;
+            }
+        } else {
+            $this->time = null;
+        }
     }
 
     public function getVpsid(): int
@@ -236,24 +261,136 @@ class Vps
         return "{$count} disk(s) [" . implode(', ', $types) . "]";
     }
 
+    /**
+     * Get creation timestamp (Unix timestamp) or null if unknown
+     */
+    public function getTime(): ?int
+    {
+        return $this->time;
+    }
+
+    /**
+     * Alias for getTime()
+     */
+    public function getCreatedAt(): ?int
+    {
+        return $this->time;
+    }
+
+    /**
+     * Get formatted Date of Creation
+     *
+     * @param string $format
+     * @param bool $includeRelative Whether to append relative age e.g. "(3 months ago)"
+     * @return string
+     */
+    public function getCreationDateFormatted(string $format = 'Y-m-d H:i:s', bool $includeRelative = false): string
+    {
+        if ($this->time === null || $this->time <= 0) {
+            return 'Not recorded / Unknown';
+        }
+
+        $formatted = date($format, $this->time);
+        if ($includeRelative) {
+            $relative = $this->getTimeAgo($this->time);
+            if ($relative !== '') {
+                return "{$formatted} ({$relative})";
+            }
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Compute human-readable relative time difference
+     */
+    public function getTimeAgo(?int $timestamp = null): string
+    {
+        $ts = $timestamp ?? $this->time;
+        if ($ts === null || $ts <= 0) {
+            return '';
+        }
+
+        $now = time();
+        $diff = $now - $ts;
+
+        if ($diff < 0) {
+            return 'in the future';
+        }
+        if ($diff < 60) {
+            return 'just now';
+        }
+        if ($diff < 3600) {
+            $mins = (int) floor($diff / 60);
+            return $mins . ' minute' . ($mins > 1 ? 's' : '') . ' ago';
+        }
+        if ($diff < 86400) {
+            $hours = (int) floor($diff / 3600);
+            return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+        }
+        if ($diff < 2592000) { // < 30 days
+            $days = (int) floor($diff / 86400);
+            return $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+        }
+        if ($diff < 31536000) { // < 365 days
+            $months = (int) floor($diff / 2592000);
+            return $months . ' month' . ($months > 1 ? 's' : '') . ' ago';
+        }
+
+        $years = (int) floor($diff / 31536000);
+        $remMonths = (int) floor(($diff % 31536000) / 2592000);
+        if ($remMonths > 0) {
+            return $years . ' year' . ($years > 1 ? 's' : '') . ', ' . $remMonths . ' month' . ($remMonths > 1 ? 's' : '') . ' ago';
+        }
+        return $years . ' year' . ($years > 1 ? 's' : '') . ' ago';
+    }
+
+    public function getVirt(): string
+    {
+        return $this->virt;
+    }
+
+    public function getSwap(): ?int
+    {
+        return $this->swap;
+    }
+
+    public function getBandwidth(): ?string
+    {
+        return $this->bandwidth;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getRawData(): array
+    {
+        return $this->rawData;
+    }
+
     public function toArray(): array
     {
         return [
-            'vpsid'      => $this->vpsid,
-            'vps_name'   => $this->vpsName,
-            'uuid'       => $this->uuid,
-            'serid'      => $this->serid,
-            'uid'        => $this->uid,
-            'hostname'   => $this->hostname,
-            'os_name'    => $this->osName,
-            'ram'        => $this->ram,
-            'cores'      => $this->cores,
-            'space'      => $this->space,
-            'status'     => $this->status,
-            'server'     => ($this->server !== null) ? $this->server->toArray() : null,
-            'disks'      => array_map(fn($d) => $d->toArray(), $this->disks),
-            'ips'        => array_map(fn($i) => $i->toArray(), $this->ips),
-            'tasks'      => array_map(fn($t) => $t->toArray(), $this->tasks),
+            'vpsid'       => $this->vpsid,
+            'vps_name'    => $this->vpsName,
+            'uuid'        => $this->uuid,
+            'serid'       => $this->serid,
+            'uid'         => $this->uid,
+            'hostname'    => $this->hostname,
+            'os_name'     => $this->osName,
+            'ram'         => $this->ram,
+            'cores'       => $this->cores,
+            'space'       => $this->space,
+            'status'      => $this->status,
+            'time'        => $this->time,
+            'created_at'  => $this->getCreationDateFormatted(),
+            'virt'        => $this->virt,
+            'swap'        => $this->swap,
+            'bandwidth'   => $this->bandwidth,
+            'server'      => ($this->server !== null) ? $this->server->toArray() : null,
+            'disks'       => array_map(fn($d) => $d->toArray(), $this->disks),
+            'ips'         => array_map(fn($i) => $i->toArray(), $this->ips),
+            'tasks'       => array_map(fn($t) => $t->toArray(), $this->tasks),
         ];
     }
 }

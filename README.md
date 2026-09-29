@@ -249,13 +249,13 @@ Running the tool without arguments launches the interactive ANSI menu:
 Displays clean tables formatted for standard 80-column and widescreen SSH terminals:
 
 ```
-┌──────┬──────────┬────────────────────────┬──────────────────────────┬───────────┬──────────────────────┬──────────────────────┬────────────┐
-│ ID   │ VPS Name │ Hostname               │ IP Address(es)           │ Server ID │ Server Name          │ Disk Summary         │ Status     │
-├──────┼──────────┼────────────────────────┼──────────────────────────┼───────────┼──────────────────────┼──────────────────────┼────────────┤
-│ 101  │ v1001    │ old-vm1.example.com    │ 198.51.100.101           │ 10        │ Retired-Dedicated-A  │ 2 disk(s) [qcow2]    │ Offline/Unk│
-│ 102  │ v1002    │ live-client.example.com│ 198.51.100.102           │ 20        │ Active-Customer-B    │ 1 disk(s) [qcow2]    │ Active     │
-│ 103  │ v1003    │ bare-vm.example.com    │ None                     │ 10        │ Retired-Dedicated-A  │ 0 disks              │ Offline/Unk│
-└──────┴──────────┴────────────────────────┴──────────────────────────┴───────────┴──────────────────────┴──────────────────────┴────────────┘
+┌──────┬──────────┬────────────────────────┬──────────────────────────┬───────────┬──────────────────────┬────────────┬──────────────────────┬────────────┐
+│ ID   │ VPS Name │ Hostname               │ IP Address(es)           │ Server ID │ Server Name          │ Created    │ Disk Summary         │ Status     │
+├──────┼──────────┼────────────────────────┼──────────────────────────┼───────────┼──────────────────────┼────────────┼──────────────────────┼────────────┤
+│ 101  │ v1001    │ old-vm1.example.com    │ 198.51.100.101           │ 10        │ Retired-Dedicated-A  │ 2022-12-31 │ 2 disk(s) [qcow2]    │ Offline/Unk│
+│ 102  │ v1002    │ live-client.example.com│ 198.51.100.102           │ 20        │ Active-Customer-B    │ 2024-01-01 │ 1 disk(s) [qcow2]    │ Active     │
+│ 103  │ v1003    │ bare-vm.example.com    │ None                     │ 10        │ Retired-Dedicated-A  │ -          │ 0 disks              │ Offline/Unk│
+└──────┴──────────┴────────────────────────┴──────────────────────────┴───────────┴──────────────────────┴────────────┴──────────────────────┴────────────┘
 ```
 
 ---
@@ -286,7 +286,7 @@ php virtualizor-vps-cleaner.php --search old-vm1
 ```
 
 ### 3. Detailed Inspection (Read-Only)
-Inspect full metadata, disk records, IP reservations, server node reachability, and task history:
+Inspect full metadata, Date of Creation (with relative age), VPS running/stopped status, virtualization architecture, RAM/swap/bandwidth limits, disk records, IP reservations, server node reachability, and task history:
 ```bash
 php virtualizor-vps-cleaner.php --inspect 101
 ```

@@ -151,9 +151,10 @@ class CleanupService
 
         return [
             'vpsToDelete'   => [
-                'vpsid'    => $vpsid,
-                'vps_name' => $vps->getVpsName(),
-                'uuid'     => $uuid,
+                'vpsid'      => $vpsid,
+                'vps_name'   => $vps->getVpsName(),
+                'uuid'       => $uuid,
+                'created_at' => $vps->getCreationDateFormatted(),
             ],
             'disksToDelete' => $disksData,
             'ipsToModify'   => $ipsData,

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-09-29
+
+### Added
+- **Detailed VPS Information & Date of Creation**:
+  - Added `Date of Creation` display to Step 1: Detailed VPS Inspection and `--inspect` CLI command, showing formatted timestamp (`Y-m-d H:i:s`) alongside human-readable relative age (e.g. `2 years, 3 months ago`).
+  - Added support for multiple database creation date columns (`time`, `created`, `created_at`, `time_added`, `date_created`) with graceful fallback when unrecorded.
+  - Enhanced VPS inspection table with live VPS status badge (`Active / Running (1)` vs `Offline / Stopped (0)`), Virtualization architecture (`virt`: KVM, LXC, OpenVZ, Xen), Swap/burst memory, and Bandwidth limit.
+  - Extended `Vps` model with `getTime()`, `getCreatedAt()`, `getCreationDateFormatted()`, `getTimeAgo()`, `getVirt()`, `getSwap()`, `getBandwidth()`, and `getRawData()`.
+
 ## [1.0.0] - 2026-09-28
 
 ### Added

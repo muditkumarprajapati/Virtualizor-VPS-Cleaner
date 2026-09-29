@@ -98,7 +98,11 @@ class TestCase
                 `ram` INTEGER DEFAULT 1024,
                 `cores` INTEGER DEFAULT 1,
                 `space` INTEGER DEFAULT 20,
-                `status` TEXT DEFAULT '1'
+                `status` TEXT DEFAULT '1',
+                `time` INTEGER DEFAULT NULL,
+                `virt` TEXT DEFAULT 'kvm',
+                `swap` INTEGER DEFAULT 0,
+                `bandwidth` INTEGER DEFAULT 1000
             );
         ");
 
@@ -161,14 +165,14 @@ class TestCase
         // VPS instances
         // VPS 101: Orphaned on Retired Server 10 (Target for deletion)
         // VPS 102: Active on Active Server 20 (MUST REMAIN INTACT)
-        // VPS 103: Orphaned with no disks or IPs (Edge case)
+        // VPS 103: Orphaned with no disks or IPs (Edge case, no creation time)
         // VPS 104: VPS with pending tasks (Must be blocked from deletion)
         $pdo->exec("
-            INSERT INTO `vps` (`vpsid`, `vps_name`, `uuid`, `serid`, `uid`, `hostname`, `os_name`, `ram`, `cores`, `space`, `status`) VALUES
-            (101, 'v1001', 'uuid-orphaned-101', 10, 5, 'old-vm1.example.com', 'Ubuntu 20.04', 2048, 2, 40, '0'),
-            (102, 'v1002', 'uuid-active-102', 20, 8, 'live-client.example.com', 'Debian 11', 4096, 4, 80, '1'),
-            (103, 'v1003', 'uuid-bare-103', 10, 2, 'bare-vm.example.com', 'CentOS 7', 1024, 1, 20, '0'),
-            (104, 'v1004', 'uuid-task-104', 10, 3, 'task-vm.example.com', 'Ubuntu 22.04', 2048, 2, 50, '0');
+            INSERT INTO `vps` (`vpsid`, `vps_name`, `uuid`, `serid`, `uid`, `hostname`, `os_name`, `ram`, `cores`, `space`, `status`, `time`, `virt`, `swap`, `bandwidth`) VALUES
+            (101, 'v1001', 'uuid-orphaned-101', 10, 5, 'old-vm1.example.com', 'Ubuntu 20.04', 2048, 2, 40, '0', 1672531199, 'kvm', 512, 2000),
+            (102, 'v1002', 'uuid-active-102', 20, 8, 'live-client.example.com', 'Debian 11', 4096, 4, 80, '1', 1704067200, 'kvm', 1024, 5000),
+            (103, 'v1003', 'uuid-bare-103', 10, 2, 'bare-vm.example.com', 'CentOS 7', 1024, 1, 20, '0', NULL, 'lxc', 0, 1000),
+            (104, 'v1004', 'uuid-task-104', 10, 3, 'task-vm.example.com', 'Ubuntu 22.04', 2048, 2, 50, '0', 1710000000, 'kvm', 0, 1000);
         ");
 
         // Disks
